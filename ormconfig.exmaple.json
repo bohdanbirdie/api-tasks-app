@@ -1,0 +1,10 @@
+{
+  "type": "postgres",
+  "host": "",
+  "port": "5432",
+  "username": "",
+  "password": "",
+  "database": "tasks_app",
+  "entities": ["dist/**/*.model{.ts,.js}"],
+  "synchronize": true
+}
