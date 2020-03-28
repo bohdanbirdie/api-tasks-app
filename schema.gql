@@ -2,9 +2,17 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input LocalAuthPayload {
+  username: String!
+  password: String!
+}
+
 type Mutation {
   addTask(newTaskData: NewTaskInput!): Task!
+  shareTask(shareTaskInput: ShareTaskInput!): Task!
   removeTask(id: Int!): Int!
+  login(localAuthPayload: LocalAuthPayload!): UserLoginSuccess!
+  signup(localAuthPayload: LocalAuthPayload!): UserLoginSuccess!
 }
 
 input NewTaskInput {
@@ -17,8 +25,20 @@ type Query {
   task(id: Int!): Task!
 }
 
+input ShareTaskInput {
+  taskId: Int!
+  shareWithId: Int!
+}
+
 type Task {
   id: Int!
   title: String!
   description: String
+}
+
+type UserLoginSuccess {
+  id: Int!
+  username: String!
+  tasks: [Task!]!
+  access_token: String!
 }

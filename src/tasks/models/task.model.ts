@@ -1,5 +1,6 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import { User } from 'src/users/models/user.model';
 
 @Entity('tasks')
 @ObjectType()
@@ -15,4 +16,11 @@ export class Task {
   @Column({ nullable: true })
   @Field({ nullable: true })
   description?: string;
+
+  @ManyToOne(type => User, user => user.tasks)
+  author: User;
+
+  @ManyToMany(type => User)
+  @JoinTable()
+  shared: User[];
 }
