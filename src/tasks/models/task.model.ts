@@ -1,6 +1,7 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from 'src/users/models/user.model';
+import { TaskSharing } from './task-sharing.model';
 
 @Entity('tasks')
 @ObjectType()
@@ -18,9 +19,9 @@ export class Task {
   description?: string;
 
   @ManyToOne(type => User, user => user.tasks)
+  @Field(() => User)
   author: User;
 
-  @ManyToMany(type => User)
-  @JoinTable()
-  shared: User[];
+  @OneToMany(() => TaskSharing, sc => sc.task)
+  sharingConnection: TaskSharing[];
 }

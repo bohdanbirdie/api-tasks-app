@@ -22,6 +22,7 @@ input NewTaskInput {
 
 type Query {
   tasks: [Task!]!
+  sharedTasks: [Task!]!
   task(id: Int!): Task!
 }
 
@@ -34,6 +35,13 @@ type Task {
   id: Int!
   title: String!
   description: String
+  author: User!
+}
+
+type User {
+  id: Int!
+  username: String!
+  tasks: [Task!]!
 }
 
 type UserLoginSuccess {

@@ -40,14 +40,7 @@ class ConfigService {
       database: this.getValue('POSTGRES_DATABASE'),
 
       entities: ['dist/**/*.model{.ts,.js}'],
-
-      migrationsTableName: 'migration',
-
-      migrations: ['dist/migration/*.ts'],
-
-      cli: {
-        migrationsDir: 'src/migration',
-      },
+      synchronize: false,
 
       ssl: this.isProduction(),
     };

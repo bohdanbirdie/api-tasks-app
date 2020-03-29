@@ -1,5 +1,5 @@
 import { TasksService } from './tasks.service';
-import { Resolver, Mutation, Int } from '@nestjs/graphql';
+import { Resolver, Mutation, Int, Parent, ResolveField } from '@nestjs/graphql';
 import { Task } from './models/task.model';
 import { Query, Args } from '@nestjs/graphql';
 import { NewTaskInput } from './dto/new-task.input';
@@ -22,9 +22,15 @@ export class TasksResolver {
   }
 
   @UseGuards(GqlJwtAuthGuard)
+  @Query(() => [Task])
+  async sharedTasks(@CurrentUser() user: User): Promise<Task[]> {
+    return this.tasksService.getSharedTasks(user);
+  }
+
+  @UseGuards(GqlJwtAuthGuard)
   @Query(() => Task)
-  async task(@Args('id', { type: () => Int }) id: number): Promise<Task> {
-    return this.tasksService.findTaskById(id);
+  async task(@Args('id', { type: () => Int }) id: number, @CurrentUser() user: User): Promise<Task> {
+    return this.tasksService.findTaskById(user, id);
   }
 
   @UseGuards(GqlJwtAuthGuard)

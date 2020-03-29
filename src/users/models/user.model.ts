@@ -1,7 +1,8 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Task } from 'src/tasks/models/task.model';
+import { TaskSharing } from 'src/tasks/models/task-sharing.model';
 
 
 @Entity('users')
@@ -22,4 +23,7 @@ export class User {
   @Field(type => [Task])
   @OneToMany(type => Task, task => task.author)
   tasks: Task[];
+
+  @OneToMany(() => TaskSharing, sc => sc.user)
+  sharingConnection: TaskSharing[];
 }
