@@ -24,6 +24,7 @@ type Query {
   tasks: [Task!]!
   sharedTasks: [Task!]!
   task(id: Int!): Task!
+  me: User!
 }
 
 input ShareTaskInput {
