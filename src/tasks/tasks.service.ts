@@ -27,7 +27,7 @@ export class TasksService {
   async getAllTasks({ id }: User): Promise<Task[]> {
     const user = await this.usersService.findOneById(id);
     this.logger.log(user);
-    const tasks = await this.tasksRepository.find({ relations: ['author'], where: { author: user } });
+    const tasks = await this.tasksRepository.find({ relations: ['author'], where: { author: user }, order: { id: 'DESC' } });
     this.logger.log(tasks);
     return tasks;
   }
@@ -44,7 +44,8 @@ export class TasksService {
       relations: ['author'],
       where: {
         id: In(shares.map(share => share.taskId))
-      }
+      },
+      order: { id: 'DESC' }
     });
 
     return tasks;
