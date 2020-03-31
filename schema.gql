@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input ChangeTaskStatusInput {
+  taskId: Int!
+  status: TaskStatus!
+}
+
 input LocalAuthPayload {
   username: String!
   password: String!
@@ -11,6 +16,7 @@ type Mutation {
   addTask(newTaskData: NewTaskInput!): Task!
   shareTask(shareTaskInput: ShareTaskInput!): Task!
   removeTask(id: Int!): Int!
+  changeTaskStatus(changeTaskStatusInput: ChangeTaskStatusInput!): Task!
   login(localAuthPayload: LocalAuthPayload!): UserLoginSuccess!
   signup(localAuthPayload: LocalAuthPayload!): UserLoginSuccess!
 }
@@ -20,11 +26,17 @@ input NewTaskInput {
   description: String
 }
 
+type Profile {
+  id: Int!
+  username: String!
+}
+
 type Query {
   tasks: [Task!]!
   sharedTasks: [Task!]!
   task(id: Int!): Task!
   me: User!
+  profiles: [Profile!]!
 }
 
 input ShareTaskInput {
@@ -37,6 +49,14 @@ type Task {
   title: String!
   description: String
   author: User!
+  status: TaskStatus!
+}
+
+enum TaskStatus {
+  READY
+  IN_PROGRESS
+  DONE
+  REJECTED
 }
 
 type User {

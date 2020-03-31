@@ -1,3 +1,4 @@
+import { Profile } from './models/user.model';
 import { User } from 'src/users/models/user.model';
 import { Resolver, Query } from '@nestjs/graphql';
 import { CurrentUser } from './current-user.decorator';
@@ -17,5 +18,11 @@ export class UsersResolver {
     const fullUser = await this.usersService.findOneById(user.id);
 
     return fullUser;
+  }
+
+  @UseGuards(GqlJwtAuthGuard)
+  @Query(() => [Profile])
+  async profiles(@CurrentUser() user: User): Promise<Profile[]> {
+    return await this.usersService.getProfiles(user.id);
   }
 }

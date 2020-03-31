@@ -8,10 +8,11 @@ import { Task } from './models/task.model';
 import { UsersModule } from 'src/users/users.module';
 import { User } from 'src/users/models/user.model';
 import { TaskSharing } from './models/task-sharing.model';
+import { TaskStatusHistoryEvent } from './models/task-status-history.model';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Task, User, TaskSharing]),
+    TypeOrmModule.forFeature([Task, User, TaskSharing, TaskStatusHistoryEvent]),
     UsersModule,
   ],
   providers: [TasksService, TasksResolver, UsersService]

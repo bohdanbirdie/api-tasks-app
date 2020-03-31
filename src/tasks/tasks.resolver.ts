@@ -8,6 +8,7 @@ import { GqlJwtAuthGuard } from 'src/auth/gql-jwt-auth.guard';
 import { CurrentUser } from 'src/users/current-user.decorator';
 import { User } from 'src/users/models/user.model';
 import { ShareTaskInput } from './dto/share-task.input';
+import { ChangeTaskStatusInput } from './dto/change-task-status.input';
 
 @Resolver(() => Task)
 export class TasksResolver {
@@ -57,5 +58,19 @@ export class TasksResolver {
     await this.tasksService.remove(id);
 
     return id;
+  }
+
+  @UseGuards(GqlJwtAuthGuard)
+  @Mutation(() => Task)
+  async changeTaskStatus(
+    @Args('changeTaskStatusInput') changeTaskStatusInput: ChangeTaskStatusInput,
+    @CurrentUser() user: User,
+  ): Promise<Task> {
+    return await this.tasksService.changeTaskStatus(changeTaskStatusInput, user);
+  }
+
+  @ResolveField()
+  async status(@Parent() task: Task) {
+    return await this.tasksService.getTaskStatus(task);
   }
 }

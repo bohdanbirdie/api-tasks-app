@@ -1,5 +1,6 @@
-import { Field, ObjectType, Int } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany } from 'typeorm';
+import { TaskStatusHistoryEvent } from './../../tasks/models/task-status-history.model';
+import { Field, ObjectType, Int, HideField } from '@nestjs/graphql';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Task } from 'src/tasks/models/task.model';
 import { TaskSharing } from 'src/tasks/models/task-sharing.model';
@@ -26,4 +27,24 @@ export class User {
 
   @OneToMany(() => TaskSharing, sc => sc.user)
   sharingConnection: TaskSharing[];
+
+  @OneToMany(() => TaskStatusHistoryEvent, sc => sc.user)
+  statusHistoryConnection: TaskStatusHistoryEvent[];
+}
+
+@ObjectType('Profile')
+export class Profile implements Omit<User, "tasks" | "sharingConnection" | "password" | "statusHistoryConnection"> {
+  @Field(type => Int)
+  id: number;
+
+  @Field()
+  username: string;
+
+  static fromUser(user: User): Profile {
+    const profile = new Profile();
+    profile.id = user.id;
+    profile.username = user.username;
+
+    return profile;
+  }
 }

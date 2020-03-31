@@ -20,7 +20,7 @@ export class AuthResolver {
   @Mutation(() => UserLoginSuccess)
   async signup(@Args('localAuthPayload') localAuthPayload: LocalAuthPayload) {
     const res = await this.authService.create(localAuthPayload);
-    console.log(res);
+
     return res;
   }
 

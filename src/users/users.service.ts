@@ -1,10 +1,12 @@
+import { TaskStatus } from './../tasks/enums/task-status';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-import { User } from './models/user.model';
+import { User, Profile } from './models/user.model';
 import { LocalAuthPayload } from 'src/auth/dto/local-auth-payload.input';
+
 
 @Injectable()
 export class UsersService {
@@ -13,14 +15,25 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private users: Repository<User>,
-  ) {}
+  ) { }
 
   async findOne(username: string): Promise<User> {
     return await this.users.findOne({ username });
   }
 
   async findOneById(id: number): Promise<User> {
-    return await this.users.findOne({ id });
+    return await this.users.findOne({ where: { id }, relations: ["tasks"] });
+  }
+
+  async getProfiles(meId: number): Promise<Profile[]> {
+    const users = await this.users.find({
+      where: {
+        id: Not(meId)
+      },
+      select: ["id", "username"]
+    });
+
+    return users;
   }
 
   async create({ username, password }: LocalAuthPayload): Promise<User> {
@@ -28,6 +41,6 @@ export class UsersService {
     const user = this.users.create({ username, password: hashedPassword });
     const created = await this.users.save(user);
 
-    return created;   
+    return created;
   }
 }

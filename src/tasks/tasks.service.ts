@@ -1,3 +1,4 @@
+import { TaskStatusHistoryEvent } from './models/task-status-history.model';
 import { User } from 'src/users/models/user.model';
 import { Task } from './models/task.model';
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { Repository, In } from 'typeorm';
 import { UsersService } from 'src/users/users.service';
 import { ShareTaskInput } from './dto/share-task.input';
 import { TaskSharing } from './models/task-sharing.model';
+import { ChangeTaskStatusInput } from './dto/change-task-status.input';
+import { TaskStatus } from './enums/task-status';
 
 
 @Injectable()
@@ -22,13 +25,15 @@ export class TasksService {
 
     @InjectRepository(TaskSharing)
     private tasksSharingRepository: Repository<TaskSharing>,
+
+    @InjectRepository(TaskStatusHistoryEvent)
+    private tasksHistoryEvents: Repository<TaskStatusHistoryEvent>,
   ) { }
 
   async getAllTasks({ id }: User): Promise<Task[]> {
     const user = await this.usersService.findOneById(id);
-    this.logger.log(user);
     const tasks = await this.tasksRepository.find({ relations: ['author'], where: { author: user }, order: { id: 'DESC' } });
-    this.logger.log(tasks);
+
     return tasks;
   }
 
@@ -39,6 +44,10 @@ export class TasksService {
         userId: user.id
       },
     });
+
+    if (!shares.length) {
+      return [];
+    }
 
     const tasks = await this.tasksRepository.find({
       relations: ['author'],
@@ -51,35 +60,41 @@ export class TasksService {
     return tasks;
   }
 
-  async findTaskById({ id }: User, taskId: number): Promise<Task> {
+  async validateAccessToTask(userId: number, taskId: number): Promise<Task> {
     const task = await this.tasksRepository.createQueryBuilder('tasks')
 
-      .innerJoinAndSelect('tasks.author', 'author')
-      .innerJoinAndSelect('tasks.sharingConnection', 'sharingConnection')
+      .leftJoinAndSelect('tasks.author', 'author')
+      .leftJoinAndSelect('tasks.sharingConnection', 'sharingConnection')
 
       .where('tasks.id = :taskId', { taskId })
-      .andWhere('tasks.author = :authorId', { authorId: id })
+      .andWhere('tasks.author = :authorId', { authorId: userId })
 
       .orWhere('tasks.id = :taskId', { taskId })
-      .andWhere('sharingConnection.userId = :userId', { userId: id })
+      .andWhere('sharingConnection.userId = :userId', { userId })
 
-      .getOne()
+      .getOne();
 
+      console.log('validate', task, userId, taskId);
 
-    console.log(`User: ${id}, task: ${taskId}`);
     if (!task) {
       throw new ForbiddenException();
     }
-    this.logger.log(task);
 
     return task;
   }
 
-  async create(newTaskInput: NewTaskInput, { id }: User): Promise<Task> {
-    const user = await this.usersService.findOneById(id);
-    const newTask = this.tasksRepository.create({ ...newTaskInput, author: user });
+  async findTaskById({ id }: User, taskId: number): Promise<Task> {
+    return await this.validateAccessToTask(id, taskId);
+  }
 
-    return await this.tasksRepository.save(newTask);
+  async create(newTaskInput: NewTaskInput, currentUser: User): Promise<Task> {
+    const user = await this.usersService.findOneById(currentUser.id);
+    const newTaskPayload = this.tasksRepository.create({ ...newTaskInput, author: user });
+    const newTask = await this.tasksRepository.save(newTaskPayload);
+
+    await this.changeTaskStatus({ taskId: newTask.id, status: TaskStatus.READY }, currentUser);
+
+    return newTask
   }
 
   async shareTask({ taskId, shareWithId }: ShareTaskInput, { id }: User): Promise<Task> {
@@ -101,7 +116,27 @@ export class TasksService {
     return task;
   }
 
+  async changeTaskStatus({ taskId, status }: ChangeTaskStatusInput, { id }: User): Promise<Task> {
+    const task = await this.validateAccessToTask(id, taskId);
+
+    const historyEvent = this.tasksHistoryEvents.create({
+      taskId,
+      userId: id,
+      status
+    });
+
+    await this.tasksHistoryEvents.save(historyEvent);
+    
+    return task;
+  }
+
   async remove(id: number): Promise<void> {
     await this.tasksRepository.delete({ id });
+  }
+
+  async getTaskStatus(task: Task): Promise<TaskStatus> {
+    const event = await this.tasksHistoryEvents.findOne({  where: { taskId: task.id }, order: { id: 'DESC' } });
+
+    return event ? event.status : TaskStatus.READY;
   }
 }
