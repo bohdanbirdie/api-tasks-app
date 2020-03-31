@@ -32,6 +32,15 @@ export class AuthService {
     return { ...found, access_token };
   }
 
+  validateToken(token: string) {
+    try {
+      this.jwtService.verify(token);
+      return true;
+    } catch (error) {
+      return error.name;
+    }
+  }
+
   async create(user: { username: string, password: string }): Promise<UserLoginSuccess> {
     const found = await this.usersService.findOne(user.username);
 
