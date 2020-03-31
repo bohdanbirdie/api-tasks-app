@@ -1,9 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, PrimaryColumn, JoinColumn } from 'typeorm';
 import { User } from 'src/users/models/user.model';
 import { Task } from './task.model';
+import { BaseModel } from 'src/helpers/BaseModel';
 
 @Entity('task_sharing')
-export class TaskSharing {
+export class TaskSharing extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 

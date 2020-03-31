@@ -28,7 +28,7 @@ export class AuthService {
     const payload = { username: found.username, sub: found.id };
     const access_token = await this.jwtService.sign(payload);
 
-    return { ...found, access_token };
+    return { ...found, access_token } as UserLoginSuccess;
   }
 
   validateToken(token: string) {

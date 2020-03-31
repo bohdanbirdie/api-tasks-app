@@ -1,17 +1,14 @@
 import { TaskStatusHistoryEvent } from './task-status-history.model';
-import { Field, ObjectType, Int } from '@nestjs/graphql';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
 import { User } from 'src/users/models/user.model';
 import { TaskSharing } from './task-sharing.model';
 import { TaskStatus } from '../enums/task-status';
+import { BaseModel } from 'src/helpers/BaseModel';
 
 @Entity('tasks')
 @ObjectType()
-export class Task {
-  @PrimaryGeneratedColumn()
-  @Field(type => Int)
-  id: number;
-
+export class Task extends BaseModel {
   @Column()
   @Field({ nullable: false })
   title: string;

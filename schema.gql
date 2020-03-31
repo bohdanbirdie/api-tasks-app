@@ -46,6 +46,8 @@ input ShareTaskInput {
 
 type Task {
   id: Int!
+  createdAt: String!
+  updatedAt: String!
   title: String!
   description: String
   author: User!
@@ -61,12 +63,16 @@ enum TaskStatus {
 
 type User {
   id: Int!
+  createdAt: String!
+  updatedAt: String!
   username: String!
   tasks: [Task!]!
 }
 
 type UserLoginSuccess {
   id: Int!
+  createdAt: String!
+  updatedAt: String!
   username: String!
   tasks: [Task!]!
   access_token: String!

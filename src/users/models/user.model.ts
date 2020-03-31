@@ -1,3 +1,4 @@
+import { BaseModel } from './../../helpers/BaseModel';
 import { TaskStatusHistoryEvent } from './../../tasks/models/task-status-history.model';
 import { Field, ObjectType, Int, HideField } from '@nestjs/graphql';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
@@ -8,11 +9,7 @@ import { TaskSharing } from 'src/tasks/models/task-sharing.model';
 
 @Entity('users')
 @ObjectType('User')
-export class User {
-  @PrimaryGeneratedColumn()
-  @Field(type => Int)
-  id: number;
-
+export class User extends BaseModel {
   @Column()
   @Field({ nullable: false })
   username: string;
@@ -33,7 +30,7 @@ export class User {
 }
 
 @ObjectType('Profile')
-export class Profile implements Omit<User, "tasks" | "sharingConnection" | "password" | "statusHistoryConnection"> {
+export class Profile implements Pick<User, "id" | "username"> {
   @Field(type => Int)
   id: number;
 

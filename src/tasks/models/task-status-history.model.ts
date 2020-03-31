@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, PrimaryColumn, JoinColumn, BaseEntity, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, PrimaryColumn, JoinColumn, Column } from 'typeorm';
 import { User } from 'src/users/models/user.model';
 import { Task } from './task.model';
 import { TaskStatus } from '../enums/task-status';
+import { BaseModel } from 'src/helpers/BaseModel';
 
 @Entity('task_status_history')
-export class TaskStatusHistoryEvent extends BaseEntity {
+export class TaskStatusHistoryEvent extends BaseModel {
   @PrimaryGeneratedColumn()
   id: number
 
