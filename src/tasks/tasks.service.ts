@@ -1,3 +1,4 @@
+import { UpdateTaskDetails } from './dto/update-task-details.input';
 import { TaskStatusHistoryEvent } from './models/task-status-history.model';
 import { User } from 'src/users/models/user.model';
 import { Task } from './models/task.model';
@@ -74,8 +75,6 @@ export class TasksService {
 
       .getOne();
 
-      console.log('validate', task, userId, taskId);
-
     if (!task) {
       throw new ForbiddenException();
     }
@@ -85,6 +84,20 @@ export class TasksService {
 
   async findTaskById({ id }: User, taskId: number): Promise<Task> {
     return await this.validateAccessToTask(id, taskId);
+  }
+
+  async getTaskEvents(taskId: number, { id }: User): Promise<TaskStatusHistoryEvent[]> {
+    await this.validateAccessToTask(id, taskId);
+
+    return await this.tasksHistoryEvents.find({
+      where: {
+        taskId
+      },
+      relations: ["user"],
+      order: {
+        createdAt: "DESC"
+      }
+    });
   }
 
   async create(newTaskInput: NewTaskInput, currentUser: User): Promise<Task> {
@@ -126,8 +139,27 @@ export class TasksService {
     });
 
     await this.tasksHistoryEvents.save(historyEvent);
-    
-    return task;
+    await this.tasksRepository.update({ id: task.id }, {})
+
+    return await this.tasksRepository.findOne({
+      where: {
+        id: task.id
+      },
+      relations: ["author"]
+    });
+  }
+
+  async updateTaskDetails({ taskId, title, description }: UpdateTaskDetails, { id }: User): Promise<Task> {
+    const task = await this.validateAccessToTask(id, taskId);
+
+    await this.tasksRepository.update({ id: task.id }, { title, description })
+
+    return await this.tasksRepository.findOne({
+      where: {
+        id: task.id
+      },
+      relations: ["author"]
+    });
   }
 
   async remove(id: number): Promise<void> {
@@ -135,7 +167,7 @@ export class TasksService {
   }
 
   async getTaskStatus(task: Task): Promise<TaskStatus> {
-    const event = await this.tasksHistoryEvents.findOne({  where: { taskId: task.id }, order: { id: 'DESC' } });
+    const event = await this.tasksHistoryEvents.findOne({ where: { taskId: task.id }, order: { id: 'DESC' } });
 
     return event ? event.status : TaskStatus.READY;
   }

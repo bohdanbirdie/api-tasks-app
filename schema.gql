@@ -17,6 +17,7 @@ type Mutation {
   shareTask(shareTaskInput: ShareTaskInput!): Task!
   removeTask(id: Int!): Int!
   changeTaskStatus(changeTaskStatusInput: ChangeTaskStatusInput!): Task!
+  updateTaskDetails(taskDetails: UpdateTaskDetails!): Task!
   login(localAuthPayload: LocalAuthPayload!): UserLoginSuccess!
   signup(localAuthPayload: LocalAuthPayload!): UserLoginSuccess!
 }
@@ -33,6 +34,7 @@ type Profile {
 
 type Query {
   tasks: [Task!]!
+  taskEvents(taskId: Int!): [TaskStatusHistoryEvent!]!
   sharedTasks: [Task!]!
   task(id: Int!): Task!
   me: User!
@@ -52,6 +54,7 @@ type Task {
   description: String
   author: User!
   status: TaskStatus!
+  user: User!
 }
 
 enum TaskStatus {
@@ -59,6 +62,22 @@ enum TaskStatus {
   IN_PROGRESS
   DONE
   REJECTED
+}
+
+type TaskStatusHistoryEvent {
+  id: Int!
+  createdAt: String!
+  updatedAt: String!
+  taskId: Int!
+  userId: Int!
+  status: TaskStatus!
+  user: User!
+}
+
+input UpdateTaskDetails {
+  taskId: Int!
+  title: String!
+  description: String
 }
 
 type User {

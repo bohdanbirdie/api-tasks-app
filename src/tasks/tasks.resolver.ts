@@ -9,11 +9,15 @@ import { CurrentUser } from 'src/users/current-user.decorator';
 import { User } from 'src/users/models/user.model';
 import { ShareTaskInput } from './dto/share-task.input';
 import { ChangeTaskStatusInput } from './dto/change-task-status.input';
+import { UpdateTaskDetails } from './dto/update-task-details.input';
+import { TaskStatusHistoryEvent } from './models/task-status-history.model';
+import { UsersService } from 'src/users/users.service';
 
 @Resolver(() => Task)
 export class TasksResolver {
   constructor(
     private tasksService: TasksService,
+    private usersService: UsersService,
   ){}
 
   @UseGuards(GqlJwtAuthGuard)
@@ -23,9 +27,15 @@ export class TasksResolver {
   }
 
   @UseGuards(GqlJwtAuthGuard)
+  @Query(() => [TaskStatusHistoryEvent])
+  async taskEvents(@Args('taskId', { type: () => Int }) taskId: number, @CurrentUser() user: User): Promise<TaskStatusHistoryEvent[]> {
+    return await this.tasksService.getTaskEvents(taskId, user);
+  }
+
+  @UseGuards(GqlJwtAuthGuard)
   @Query(() => [Task])
   async sharedTasks(@CurrentUser() user: User): Promise<Task[]> {
-    return this.tasksService.getSharedTasks(user);
+    return await this.tasksService.getSharedTasks(user);
   }
 
   @UseGuards(GqlJwtAuthGuard)
@@ -69,8 +79,22 @@ export class TasksResolver {
     return await this.tasksService.changeTaskStatus(changeTaskStatusInput, user);
   }
 
+  @UseGuards(GqlJwtAuthGuard)
+  @Mutation(() => Task)
+  async updateTaskDetails(
+    @Args('taskDetails') taskDetails: UpdateTaskDetails,
+    @CurrentUser() user: User,
+  ): Promise<Task> {
+    return await this.tasksService.updateTaskDetails(taskDetails, user);
+  }
+
   @ResolveField()
   async status(@Parent() task: Task) {
     return await this.tasksService.getTaskStatus(task);
+  }
+
+  @ResolveField(() => User)
+  async user(@Parent() taskEvent: TaskStatusHistoryEvent) {
+    return await this.usersService.findOneById(taskEvent.userId);
   }
 }
